@@ -1,0 +1,19 @@
+﻿@model IndexViewModel
+@{
+    ViewData["Title"] = "Login page";
+}
+
+<form asp-controller="Home" asp-action="Login" method="post">
+    <h1>Login</h1>
+
+    <label for="username">Username</label> <input type="text" name="username" id="username" required />
+
+    <label for="password">Password</label> <input type="password" name="password" id="password" required />
+
+    <button type="submit">Login</button>
+    
+    @if (Model.AreCredentialsWrong)
+    {
+        <p style="color: red;">Username or password is wrong. Please try again.</p>
+    }
+</form>
