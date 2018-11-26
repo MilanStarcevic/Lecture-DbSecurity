@@ -3,14 +3,16 @@ using DbSecurityDemo.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DbSecurityDemo.Migrations
 {
     [DbContext(typeof(DbAccessContext))]
-    partial class DbAccessContextModelSnapshot : ModelSnapshot
+    [Migration("20181126172406_SensitiveData")]
+    partial class SensitiveData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

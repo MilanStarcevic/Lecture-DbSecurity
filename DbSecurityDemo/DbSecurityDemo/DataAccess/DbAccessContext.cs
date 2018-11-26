@@ -9,5 +9,7 @@ namespace DbSecurityDemo.DataAccess
         { }
 
         public DbSet<User> Users { get; set; }
+
+        public DbSet<SensitiveData> SensitiveDatas { get; set; }
     }
 }

