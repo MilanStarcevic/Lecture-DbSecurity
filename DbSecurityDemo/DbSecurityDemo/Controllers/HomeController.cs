@@ -31,7 +31,7 @@ namespace DbSecurityDemo.Controllers
         [HttpPost]
         public IActionResult Login(LoginViewModel login)
         {
-            User user = GetUserFromDatabaseUsingOrm(login);
+            User user = GetUserFromDatabase(login);
 
             if (user == null)
             {
@@ -66,26 +66,34 @@ namespace DbSecurityDemo.Controllers
 
         private User GetUserFromDatabase(LoginViewModel login)
         {
-            var user = new User();
 
             using (var connection = new SqlConnection(_configuration.GetConnectionString("DbAccessContext")))
             {
-                SqlCommand cmd = new SqlCommand();
-                SqlDataReader reader;
-
-                cmd.CommandText = "SELECT Username, PasswordHash, Salt FROM Users WHERE User = " + login.Username;
-                cmd.CommandType = CommandType.Text;
-                cmd.Connection = connection;
+                SqlCommand cmd = new SqlCommand
+                {
+                    CommandText = "SELECT Username, PasswordHash, Salt FROM Users WHERE Username = '" + login.Username + "'",
+                    CommandType = CommandType.Text,
+                    Connection = connection
+                };
 
                 connection.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.HasRows)
+                    {
+                        return null;
+                    }
 
-                reader = cmd.ExecuteReader();
-                user.Username = reader.GetString(0);
-                user.PasswordHash = reader.GetString(1);
-                user.Salt = reader.GetString(2);
+                    reader.Read();
+
+                    return new User
+                    {
+                        Username = reader.GetString(0),
+                        PasswordHash = reader.GetString(1),
+                        Salt = reader.GetString(2)
+                    };
+                }
             }
-
-            return user;
         }
 
         private User GetUserFromDatabaseUsingOrm(LoginViewModel login)
