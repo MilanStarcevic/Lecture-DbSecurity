@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
+using System.Linq;
 using DbSecurityDemo.DataAccess;
 using System.Text;
 
@@ -13,11 +14,13 @@ namespace DbSecurityDemo.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IConfiguration configuration;
+        private readonly IConfiguration _configuration;
+        private readonly DbAccessContext _dbAccess;
 
-        public HomeController(IConfiguration configuration)
+        public HomeController(IConfiguration configuration, DbAccessContext dbAccess)
         {
-            this.configuration = configuration;
+            _configuration = configuration;
+            _dbAccess = dbAccess;
         }
 
         public IActionResult Index([FromQuery] IndexViewModel index)
@@ -28,16 +31,26 @@ namespace DbSecurityDemo.Controllers
         [HttpPost]
         public IActionResult Login(LoginViewModel login)
         {
-            User user = GetUserFromDatabase(login);
+            User user = GetUserFromDatabaseUsingOrm(login);
+
+            if (user == null)
+            {
+                return WrongCredentialsMessage();
+            }
 
             string hashedPassword = HashPassword(login, user);
 
             if (user.PasswordHash != hashedPassword)
             {
-                return RedirectToAction("Index", new IndexViewModel { AreCredentialsWrong = true });
+                return WrongCredentialsMessage();
             }
 
             return View(new WelcomeViewModel { Username = login.Username });
+        }
+
+        private RedirectToActionResult WrongCredentialsMessage()
+        {
+            return RedirectToAction("Index", new IndexViewModel { AreCredentialsWrong = true });
         }
 
         private static string HashPassword(LoginViewModel login, User user)
@@ -55,7 +68,7 @@ namespace DbSecurityDemo.Controllers
         {
             var user = new User();
 
-            using (var connection = new SqlConnection(configuration.GetConnectionString("DbAccessContext")))
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DbAccessContext")))
             {
                 SqlCommand cmd = new SqlCommand();
                 SqlDataReader reader;
@@ -73,6 +86,11 @@ namespace DbSecurityDemo.Controllers
             }
 
             return user;
+        }
+
+        private User GetUserFromDatabaseUsingOrm(LoginViewModel login)
+        {
+            return _dbAccess.Users.FirstOrDefault(user => user.Username == login.Username);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
