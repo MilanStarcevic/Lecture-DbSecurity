@@ -1,0 +1,54 @@
+-- *** Encrypt
+
+CREATE MASTER KEY ENCRYPTION BY   
+PASSWORD = 'VeryLongSecretPasswordThatIsStoredSecretly18432=_#$';
+
+USE LectureDb;  
+
+GO  
+
+CREATE CERTIFICATE Sales09  
+   WITH SUBJECT = 'Sensitive Data';  
+GO  
+
+CREATE SYMMETRIC KEY SensitiveDataKey  
+    WITH ALGORITHM = AES_256  
+    ENCRYPTION BY CERTIFICATE Sales09;  
+GO  
+
+-- Create a column in which to store the encrypted data.  
+ALTER TABLE SensitiveDatas
+    ADD SensitiveDataEncrypted varbinary(1024);   
+GO  
+
+-- Open the symmetric key with which to encrypt the data.  
+OPEN SYMMETRIC KEY SensitiveDataKey  
+   DECRYPTION BY CERTIFICATE Sales09;  
+
+-- Encrypt the value in column CardNumber using the  
+-- symmetric key CreditCards_Key11.  
+-- Save the result in column CardNumber_Encrypted.    
+UPDATE SensitiveDatas
+SET SensitiveDataEncrypted = EncryptByKey(Key_GUID('SensitiveDataKey')  
+    , MyBigSecret, 1, HashBytes('SHA1', CONVERT( varbinary  
+    , MyBigSecret)));  
+GO  
+
+-- *** Demonstrate the encryption.  
+-- First, open the symmetric key with which to decrypt the data.  
+
+USE LectureDb;  
+
+GO  
+
+SELECT * FROM SensitiveDatas
+
+ OPEN SYMMETRIC KEY SensitiveDataKey  
+   DECRYPTION BY CERTIFICATE Sales09;  
+GO  
+  SELECT MyBigSecret, SensitiveDataEncrypted   
+    AS 'Encrypted card number', CONVERT(nvarchar,  
+    DecryptByKey(SensitiveDataEncrypted, 1 ,   
+    HashBytes('SHA1', CONVERT(varbinary, MyBigSecret))))  
+    AS 'Decrypted card number' FROM SensitiveDatas;  
+GO  
