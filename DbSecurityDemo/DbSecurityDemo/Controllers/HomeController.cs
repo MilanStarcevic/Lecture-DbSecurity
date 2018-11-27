@@ -48,11 +48,6 @@ namespace DbSecurityDemo.Controllers
             return View(new WelcomeViewModel { Username = login.Username });
         }
 
-        private RedirectToActionResult WrongCredentialsMessage()
-        {
-            return RedirectToAction("Index", new IndexViewModel { AreCredentialsWrong = true });
-        }
-
         private static string HashPassword(LoginViewModel login, User user)
         {
             // derive a 256-bit subkey (use HMACSHA512 with 10,000 iterations)
@@ -66,7 +61,6 @@ namespace DbSecurityDemo.Controllers
 
         private User GetUserFromDatabase(LoginViewModel login)
         {
-
             using (var connection = new SqlConnection(_configuration.GetConnectionString("DbAccessContext")))
             {
                 SqlCommand cmd = new SqlCommand
@@ -96,9 +90,48 @@ namespace DbSecurityDemo.Controllers
             }
         }
 
+        private User GetUserFromDatabaseUsingParameters(LoginViewModel login)
+        {
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DbAccessContext")))
+            {
+                SqlCommand cmd = new SqlCommand
+                {
+                    CommandText = "SELECT Username, PasswordHash, Salt FROM Users WHERE Username = @username",
+                    CommandType = CommandType.Text,
+                    Connection = connection
+                };
+
+                cmd.Parameters.AddWithValue("@username", login.Username);
+
+                connection.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.HasRows)
+                    {
+                        return null;
+                    }
+
+                    reader.Read();
+
+                    return new User
+                    {
+                        Username = reader.GetString(0),
+                        PasswordHash = reader.GetString(1),
+                        Salt = reader.GetString(2)
+                    };
+                }
+            }
+        }
+
         private User GetUserFromDatabaseUsingOrm(LoginViewModel login)
         {
             return _dbAccess.Users.FirstOrDefault(user => user.Username == login.Username);
+        }
+
+        #region Helper methods
+        private RedirectToActionResult WrongCredentialsMessage()
+        {
+            return RedirectToAction("Index", new IndexViewModel { AreCredentialsWrong = true });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -106,5 +139,6 @@ namespace DbSecurityDemo.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        #endregion
     }
 }
