@@ -1,7 +1,8 @@
--- *** Encrypt
+-- *** Encrypt Cell level encryption vs Transparent level encryption
 
 CREATE MASTER KEY ENCRYPTION BY   
 PASSWORD = 'VeryLongSecretPasswordThatIsStoredSecretly18432=_#$';
+
 
 USE LectureDb;  
 
@@ -33,6 +34,7 @@ SET SensitiveDataEncrypted = EncryptByKey(Key_GUID('SensitiveDataKey')
     , MyBigSecret, 1, HashBytes('SHA1', CONVERT( varbinary  
     , MyBigSecret)));  
 GO  
+
 
 -- *** Demonstrate the encryption.  
 -- First, open the symmetric key with which to decrypt the data.  
