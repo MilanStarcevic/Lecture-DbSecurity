@@ -4,10 +4,6 @@ CREATE MASTER KEY ENCRYPTION BY
 PASSWORD = 'VeryLongSecretPasswordThatIsStoredSecretly18432=_#$';
 
 
-USE LectureDb;  
-
-GO  
-
 CREATE CERTIFICATE Sales09  
    WITH SUBJECT = 'Sensitive Data';  
 GO  
@@ -35,19 +31,16 @@ GO
 
 -- *** Prove encryption successful
 
-USE LectureDb;  
-
-GO  
-
 -- What is in table currently?
 SELECT SensitiveDataEncrypted FROM SensitiveDatas;
+
 
 -- Show decrypted data
 OPEN SYMMETRIC KEY SensitiveDataKey  
    DECRYPTION BY CERTIFICATE Sales09;  
 GO  
-  SELECT SensitiveDataEncrypted   
-    AS 'Encrypted sensitive data', CONVERT(nvarchar,  
+  SELECT SensitiveDataEncrypted, 
+  CONVERT(nvarchar,  
     DecryptByKey(SensitiveDataEncrypted, 1 ,   
     HashBytes('SHA1', CONVERT(varbinary, MyBigSecret))))  
     AS 'Decrypted sensitive data' FROM SensitiveDatas;  
