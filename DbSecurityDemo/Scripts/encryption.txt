@@ -1,4 +1,4 @@
--- *** Encrypt Cell level encryption vs Transparent level encryption
+-- *** Perform Encryption
 
 CREATE MASTER KEY ENCRYPTION BY   
 PASSWORD = 'VeryLongSecretPasswordThatIsStoredSecretly18432=_#$';
@@ -26,9 +26,6 @@ GO
 OPEN SYMMETRIC KEY SensitiveDataKey  
    DECRYPTION BY CERTIFICATE Sales09;  
 
--- Encrypt the value in column CardNumber using the  
--- symmetric key CreditCards_Key11.  
--- Save the result in column CardNumber_Encrypted.    
 UPDATE SensitiveDatas
 SET SensitiveDataEncrypted = EncryptByKey(Key_GUID('SensitiveDataKey')  
     , MyBigSecret, 1, HashBytes('SHA1', CONVERT( varbinary  
@@ -36,16 +33,17 @@ SET SensitiveDataEncrypted = EncryptByKey(Key_GUID('SensitiveDataKey')
 GO  
 
 
--- *** Demonstrate the encryption.  
--- First, open the symmetric key with which to decrypt the data.  
+-- *** Prove encryption successful
 
 USE LectureDb;  
 
 GO  
 
+-- What is in table currently?
 SELECT SensitiveDataEncrypted FROM SensitiveDatas;
 
- OPEN SYMMETRIC KEY SensitiveDataKey  
+-- Show decrypted data
+OPEN SYMMETRIC KEY SensitiveDataKey  
    DECRYPTION BY CERTIFICATE Sales09;  
 GO  
   SELECT SensitiveDataEncrypted   
