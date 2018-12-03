@@ -43,14 +43,14 @@ USE LectureDb;
 
 GO  
 
-SELECT SensitiveDataEncrypted FROM SensitiveDatas
+SELECT SensitiveDataEncrypted FROM SensitiveDatas;
 
  OPEN SYMMETRIC KEY SensitiveDataKey  
    DECRYPTION BY CERTIFICATE Sales09;  
 GO  
   SELECT SensitiveDataEncrypted   
-    AS 'Encrypted card number', CONVERT(nvarchar,  
+    AS 'Encrypted sensitive data', CONVERT(nvarchar,  
     DecryptByKey(SensitiveDataEncrypted, 1 ,   
     HashBytes('SHA1', CONVERT(varbinary, MyBigSecret))))  
-    AS 'Decrypted card number' FROM SensitiveDatas;  
+    AS 'Decrypted sensitive data' FROM SensitiveDatas;  
 GO  

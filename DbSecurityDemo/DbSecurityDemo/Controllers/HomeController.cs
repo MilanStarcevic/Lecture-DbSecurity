@@ -50,13 +50,12 @@ namespace DbSecurityDemo.Controllers
 
         private static string HashPassword(LoginViewModel login, User user)
         {
-            // derive a 256-bit subkey (use HMACSHA512 with 10,000 iterations)
-            var hashBytes = KeyDerivation.Pbkdf2(
+            var hashBytes = KeyDerivation.Pbkdf2( // Password-Based Key Derivation Function 2
                 password: login.Password,
                 salt: Encoding.ASCII.GetBytes(user.Salt),
                 prf: KeyDerivationPrf.HMACSHA512,
                 iterationCount: 10000,
-                numBytesRequested: 256 / 8);
+                numBytesRequested: 32); // 256 bits
 
             return Convert.ToBase64String(hashBytes);
         }
